@@ -14,7 +14,19 @@
       <button class="btn btn-danger btn-sm">
         <i class="fa-regular fa-trash-can"></i> Delete User
       </button>
+    </form>
+    <form
+      style="display: inline"
+      action="{{url_for('edit_user', username = user.username) }}"
+      method="POST"
+    >
+      <button class="btn btn-secondary btn-sm">
+        <i class="fa-regular fa-pen-to-square"></i> Edit User
+      </button>
+    </form>
   </div>
 </div>
 
+<!-- Eventually you want a section here that shows a users saved medications -->
+<!-- NEXT STEP WHEN YOU COME BACK is UPDATING USER INFO! Let em change settings.  -->
 {% endblock %}

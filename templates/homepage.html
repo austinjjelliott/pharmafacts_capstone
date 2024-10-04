@@ -1,0 +1,17 @@
+{% extends 'base.html' %} {% block content %}
+<h1 class="display-1">Welcome to Pharmafacts!</h1>
+<div class="container">
+  <div class="container">
+    <p class="lead text-center">
+      Use the search bar to look for a drug you are interested in learning more
+      about. <br />If you wish to keep track of your drugs, create an account at
+      the link above!
+    </p>
+  </div>
+</div>
+<form>
+  <input class="form-control" type="text" placeholder="Search Medications" />
+  <button class="btn btn-success mt-2" type="submit">Search</button>
+</form>
+
+{% endblock %}

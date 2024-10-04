@@ -38,3 +38,6 @@ class User(db.Model):
             return u 
         else:
             return False
+        
+    def update_password(self, password):
+        self.password = bcrypt.generate_password_hash(password).decode('utf8')

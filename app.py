@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, session, flash, url_for
 from flask_debugtoolbar import DebugToolbarExtension
 from models import connect_db, db, User
-from forms import UserForm, LoginForm
+from forms import UserForm, LoginForm, EditUserForm
 from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
@@ -16,7 +16,8 @@ toolbar = DebugToolbarExtension(app)
 
 @app.route('/')
 def home_page():
-    return redirect ('/register')
+    user = User.query.get(session['user_id']) if 'user_id' in session else None
+    return render_template ('homepage.html', user = user)
 
 @app.route('/register', methods = ["GET", "POST"])
 def register_user():
@@ -59,7 +60,7 @@ def login_user():
 
         user = User.authenticate(username, password)
         if user:
-            flash(f'Welcome Back {user.username}', 'success')
+            flash(f'Welcome Back {user.username}', 'info')
             session['user_id'] = user.id
             return redirect(f'/users/{username}')
         else:
@@ -108,3 +109,30 @@ def delete_user(username):
         flash('Account deleted', 'danger')
         return redirect('/register')
     return render_template('user_homepage.html', user = user)
+
+@app.route('/users/<username>/edit', methods = ["GET", "POST"])
+def edit_user(username):
+    
+    user = User.query.filter_by(username = username).first_or_404()
+    form = EditUserForm(obj = user)
+
+    if 'user_id' not in session:
+        flash('You need to login first!')
+        return redirect('/login')
+
+    if session['user_id'] != user.id:
+        flash('You need to login first!')
+        return redirect('/login')
+
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data 
+        user.first_name = form.first_name.data
+        user.last_name = form.last_name.data
+        if form.password.data:
+            user.update_password(form.password.data)
+
+        db.session.commit()
+        flash('User has been updated!', 'success')
+        return redirect(f'/users/{user.username}')
+    return render_template('user_edit.html', user=user, form=form)
