@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, session, flash, url_for, request
 import requests
 from flask_debugtoolbar import DebugToolbarExtension
@@ -5,10 +7,12 @@ from models import connect_db, db, User, Bookmark
 from forms import UserForm, LoginForm, EditUserForm
 from sqlalchemy.exc import IntegrityError
 
+load_dotenv()
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///pharmafacts'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config["SQLALCHEMY_ECHO"] = True
-app.config["SECRET_KEY"] = "abc123"
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 connect_db(app)
@@ -148,7 +152,7 @@ def edit_user(username):
 #############################
 # Getting the info from the API 
 API_BASE_URL = 'https://api.fda.gov/drug/label.json'
-API_KEY = '0gKuQyg3MlV8eM2CjW9BDLwbVTfjLcwqGlHJUWtg'
+API_KEY = os.getenv("API_KEY")
 
 
 @app.route('/drug_info', methods = ["GET"])
