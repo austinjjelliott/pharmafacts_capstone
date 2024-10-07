@@ -9,9 +9,95 @@
     </p>
   </div>
 </div>
-<form>
-  <input class="form-control" type="text" placeholder="Search Medications" />
+<form action="/drug_info" , method="GET">
+  <input
+    class="form-control"
+    type="text"
+    placeholder="Search Medications"
+    name="drug"
+  />
   <button class="btn btn-success mt-2" type="submit">Search</button>
 </form>
+<div>
+  {% if results %}
+  <h2>Search Reults:</h2>
+  {% for item in results %}
+  <div class="col-md-12 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <form action="/bookmark" method="POST">
+          <!-- Need to fix this bookmark button... -->
+          <input
+            type="hidden"
+            name="medication_name"
+            value="{{ item.brand_name }}"
+          />
+          <button class="btn btn-primary" type="submit">
+            Bookmark <i class="fa-regular fa-bookmark"></i>
+          </button>
+        </form>
 
-{% endblock %}
+        <h5>
+          <a
+            class="btn btn-link"
+            data-toggle="collapse"
+            data-target="#collapse{{ loop.index }}"
+            role="button"
+            aria-expanded="false"
+            aria-controls="collapse{{ loop.index }}"
+          >
+            <strong>Brand Name:</strong> {{ item.openfda.brand_name[0] if
+            item.openfda.brand_name else 'N/A' }}
+        </h5></a>
+
+        <h6>
+          <strong>Generic Name:</strong> {{ item.openfda.generic_name[0] if
+          item.openfda.generic_name else 'N/A' }}
+        </h6>
+
+        <div class="collapse" id="collapse{{ loop.index }}">
+          <p class="card-text">
+            <strong>Active Ingredient(s):</strong> {{ item.active_ingredient[0]
+            if item.active_ingredient else 'Not available' }} <br />
+            <strong>Purpose:</strong> {{ item.purpose[0] if item.purpose else
+            'Not available' }} <br />
+            <strong>Warnings:</strong> {{ item.warnings[0] if item.warnings else
+            'Not available' }} <br />
+            <strong>Indications:</strong> {{ item.indications_and_usage[0] if
+            item.indications_and_usage else 'Not available' }} <br />
+            <strong>Dosage and Administration:</strong> {{
+            item.dosage_and_administration[0] if item.dosage_and_administration
+            else 'Not available' }}<br />
+            <strong>Adverse Reactions:</strong> {{ item.adverse_reactions[0] if
+            item.adverse_reactions else 'Not available' }}<br />
+            <strong>Storage and Handling:</strong> {{
+            item.storage_and_handling[0] if item.storage_and_handling else 'Not
+            available' }}
+          </p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between mt-4">
+      {% if page > 1 %}
+      <a
+        href="{{url_for('get_drug_info', drug=request.args.get('drug'), page=page-1)}}"
+        class="btn btn-primary"
+        >Previous</a
+      >
+      {% endif %} {% if page < total_pages %}
+      <a
+        href="{{url_for('get_drug_info', drug=request.args.get('drug'), page=page+1)}}"
+        class="btn btn-primary"
+        >Next</a
+      >
+      {% endif %}
+    </div>
+
+    {% endif %}
+  </div>
+
+  {% endblock %}
+</div>

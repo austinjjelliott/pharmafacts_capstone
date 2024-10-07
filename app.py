@@ -1,6 +1,7 @@
-from flask import Flask, render_template, redirect, session, flash, url_for
+from flask import Flask, render_template, redirect, session, flash, url_for, request
+import requests
 from flask_debugtoolbar import DebugToolbarExtension
-from models import connect_db, db, User
+from models import connect_db, db, User, Bookmark
 from forms import UserForm, LoginForm, EditUserForm
 from sqlalchemy.exc import IntegrityError
 
@@ -76,6 +77,7 @@ def login_user():
 @app.route('/users/<username>')
 def show_user(username):
     user = User.query.get_or_404(session['user_id'])
+    bookmarks = Bookmark.query.filter_by(user_id = session['user_id']).all()
 
     if 'user_id' not in session:
         flash('Please Login To View')
@@ -83,7 +85,7 @@ def show_user(username):
     if session['user_id'] != user.id:
         return('Access Denied')    
 
-    return render_template('user_homepage.html', user = user)
+    return render_template('user_homepage.html', user = user, bookmarks=bookmarks)
 
 @app.route('/logout')
 def logout_user():
@@ -136,3 +138,87 @@ def edit_user(username):
         flash('User has been updated!', 'success')
         return redirect(f'/users/{user.username}')
     return render_template('user_edit.html', user=user, form=form)
+
+
+#############################
+# Getting the info from the API 
+API_BASE_URL = 'https://api.fda.gov/drug/label.json'
+API_KEY = '0gKuQyg3MlV8eM2CjW9BDLwbVTfjLcwqGlHJUWtg'
+
+
+@app.route('/drug_info', methods = ["GET"])
+def get_drug_info():
+   user = User.query.get(session['user_id']) if 'user_id' in session else None
+   drug = request.args.get('drug', '')
+   page = request.args.get('page', 1, type = int)
+   results_per_page = 5
+
+   if not drug:
+       flash('Please enter a valid drug name to search', 'warning')
+       return redirect('/')
+  
+   params = {'api_key': API_KEY,
+             'search': f'openfda.brand_name:"{drug}" OR openfda.generic_name:"{drug}"',
+             "limit": 20}
+   res = requests.get(API_BASE_URL, params = params)
+   if res.status_code != 200:
+       flash('Drug Not Found', 'danger')
+       return redirect('/')
+  
+   # Extract first drugs info to decide what to display:
+   try:
+       results = res.json()['results']
+   except(KeyError, IndexError):
+       flash('No Results Found', 'warning')
+       return redirect('/')
+   
+# Filter the results for brand or generic name matches 
+   filtered_results = [
+        item for item in results
+        if drug.lower() in (item.get('openfda', {}).get('brand_name', [''])[0].lower() or '')
+        or drug.lower() in (item.get('openfda', {}).get('generic_name', [''])[0].lower() or '')
+    ]
+   if not filtered_results:
+        flash('No Results Found With Brand or Generic Name', 'warning')
+        return redirect('/')
+#Sort the results so exact matches show first 
+   def match_score(result):
+       brand_name = result.get('openfda',{}).get('brand_name', [''])[0].lower()
+       generic_name = result.get('openfda',{}).get('generic_name',[''])[0].lower()
+       
+       if drug.lower() == brand_name:
+           return 2
+       elif drug.lower() == generic_name:
+           return 1
+       return 0
+   filtered_results.sort(key=match_score, reverse = True)
+
+   #Paginate the results:
+   total_results = len(filtered_results)
+   total_pages = (total_results + results_per_page -1 ) // results_per_page 
+   start = (page-1) * results_per_page
+   end = start + results_per_page
+   paginated_results = filtered_results[start:end]
+   
+   
+   return render_template('homepage.html', user = user, results=paginated_results, page=page, total_pages=total_pages)
+
+@app.route('/bookmark', methods=['POST'])
+def bookmark_drug():
+    user = User.query.get(session['user_id']) if 'user_id' in session else None
+    medication_name = request.form.get('medication_name')
+    if 'user_id' not in session:
+        flash('Please Sign Up To Bookmark a Drug')
+        return redirect('/register')
+    if session['user_id'] != user.id:
+        return('Access Denied')
+    existing_bookmark = Bookmark.query.filter_by(user_id=user.id, medication_name = medication_name).first()
+    if existing_bookmark:
+        flash('Already Bookmarked!', 'info')
+    else:
+        new_bookmark = Bookmark(user_id = session['user_id'], medication_name=medication_name)
+        db.session.add(new_bookmark)
+        db.session.commit()
+        flash('Bookmarked Successfully', 'success')
+    return redirect(request.referrer)
+    

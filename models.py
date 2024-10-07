@@ -20,6 +20,8 @@ class User(db.Model):
     first_name = db.Column(db.String(30), nullable = False)
     last_name = db.Column(db.String(30), nullable = False)
 
+    bookmarks = db.relationship('Bookmark', backref='user', lazy = True, cascade="all, delete-orphan")
+
     @classmethod
     def register(cls, username, pwd, email, first_name, last_name):
         hashed = bcrypt.generate_password_hash(pwd)
@@ -41,3 +43,26 @@ class User(db.Model):
         
     def update_password(self, password):
         self.password = bcrypt.generate_password_hash(password).decode('utf8')
+
+
+class Bookmark(db.Model):
+    """Mapping user likes to warbles."""
+
+    __tablename__ = 'bookmarks' 
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='cascade'),
+        nullable = False
+    )
+
+    medication_name = db.Column(
+        db.String, 
+        nullable=False
+    )
+

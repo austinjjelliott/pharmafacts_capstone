@@ -26,7 +26,11 @@
     </form>
   </div>
 </div>
-
-<!-- Eventually you want a section here that shows a users saved medications -->
-<!-- NEXT STEP WHEN YOU COME BACK is UPDATING USER INFO! Let em change settings.  -->
-{% endblock %}
+{% if bookmarks %}
+<h1>Your Bookmarked Medications</h1>
+<ul>
+  {% for bookmark in bookmarks %}
+  <li>{{ bookmark.medication_name }}</li>
+  {% endfor %}
+</ul>
+{% endif %} {% endblock %}
