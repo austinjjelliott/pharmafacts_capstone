@@ -50,19 +50,19 @@ class Bookmark(db.Model):
 
     __tablename__ = 'bookmarks' 
 
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column( db.Integer, db.ForeignKey('users.id', ondelete='cascade'), nullable = False)
+    brand_name = db.Column(db.String, nullable=False)
+    generic_name = db.Column(db.String, nullable=False)
+    active_ingredient = db.Column(db.String, nullable = True)
+    purpose = db.Column(db.String, nullable = True)
+    warnings = db.Column(db.String, nullable = True)
+    indications = db.Column(db.String, nullable = True)
+    dosage = db.Column(db.String, nullable = True)
+    adverse_reactions = db.Column(db.String, nullable = True)
+    storage = db.Column(db.String, nullable = True)
 
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id', ondelete='cascade'),
-        nullable = False
-    )
 
-    medication_name = db.Column(
-        db.String, 
-        nullable=False
-    )
+
+
 

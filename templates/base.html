@@ -12,14 +12,23 @@
       src="https://kit.fontawesome.com/e10f72a185.js"
       crossorigin="anonymous"
     ></script>
-    <title>{% block title %} {% endblock %}</title>
+    <title>{% block title %} PharmaFacts {% endblock %}</title>
   </head>
 
   <body>
-    <nav class="navbar navbar-light bg-success justify-content-between">
+    <nav class="navbar navbar-light bg-primary justify-content-between">
       <div class="container">
-        <a href="/" class="navbar-brand text-light">Pharmafacts</a>
+        <div class="d-flex align-items-center">
+          <a href="/" class="navbar-brand text-light"
+            ><i class="fa-solid fa-tablets"></i>
+            PharmaFacts
+            <i class="fa-solid fa-capsules"></i
+          ></a>
+        </div>
         <ul class="nav navbar-nav flex-row float-right">
+          <li class="nav-item">
+            <a class="nav-link pr-3 text-light" href="/about"> About </a>
+          </li>
           {% if session['user_id'] %}
           <li class="nav-item">
             <a class="nav-link pr-3 text-light" href="/users/{{user.username}}"

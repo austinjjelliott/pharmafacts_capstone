@@ -20,6 +20,11 @@ def home_page():
     user = User.query.get(session['user_id']) if 'user_id' in session else None
     return render_template ('homepage.html', user = user)
 
+@app.route('/about')
+def about():
+    user = User.query.get(session['user_id']) if 'user_id' in session else None
+    return render_template('about.html', user=user)
+
 @app.route('/register', methods = ["GET", "POST"])
 def register_user():
     form = UserForm()
@@ -206,19 +211,41 @@ def get_drug_info():
 @app.route('/bookmark', methods=['POST'])
 def bookmark_drug():
     user = User.query.get(session['user_id']) if 'user_id' in session else None
-    medication_name = request.form.get('medication_name')
+    brand_name = request.form.get('brand_name')
+    generic_name = request.form.get('generic_name')
+    active_ingredient = request.form.get('active_ingredient')
+    purpose = request.form.get('purpose')
+    warnings = request.form.get('warnings')
+    indications = request.form.get('indications_and_usage')
+    dosage = request.form.get('dosage_and_administration')
+    adverse_reactions = request.form.get('adverse_reactions')
+    storage = request.form.get('storage')
+    
     if 'user_id' not in session:
-        flash('Please Sign Up To Bookmark a Drug')
+        flash('Please Sign Up To Bookmark A Medication', 'warning')
         return redirect('/register')
     if session['user_id'] != user.id:
         return('Access Denied')
-    existing_bookmark = Bookmark.query.filter_by(user_id=user.id, medication_name = medication_name).first()
+    
+    existing_bookmark = Bookmark.query.filter_by(user_id=user.id, brand_name = brand_name).first()
     if existing_bookmark:
         flash('Already Bookmarked!', 'info')
     else:
-        new_bookmark = Bookmark(user_id = session['user_id'], medication_name=medication_name)
+        new_bookmark = Bookmark(user_id = session['user_id'], brand_name=brand_name, generic_name=generic_name, active_ingredient=active_ingredient, purpose=purpose, warnings=warnings, indications=indications, dosage=dosage, adverse_reactions=adverse_reactions, storage=storage)
         db.session.add(new_bookmark)
         db.session.commit()
-        flash('Bookmarked Successfully', 'success')
+        flash('Bookmarked Successfully', 'info')
     return redirect(request.referrer)
     
+@app.route('/bookmark/<int:id>/remove', methods = ["POST"])
+def remove_bookmark(id):
+    if 'user_id' not in session:
+        flash('Please login first!', 'danger')
+        return redirect('/login')
+    user = User.query.get_or_404(session['user_id'])
+    bookmark = Bookmark.query.get_or_404(id)
+    if bookmark.user_id == session['user_id']:
+        db.session.delete(bookmark)
+        db.session.commit()
+        flash('Bookmark Removed!', 'success')
+        return redirect(url_for('show_user', username = user.username))

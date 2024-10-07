@@ -1,4 +1,7 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %}
+{% block title %} {{ user.username}}'s Page {% endblock %}
+
+{% block content %}
 <h1>{{ user.username }}'s Page</h1>
 <h3>Welcome {{ user.first_name }} {{ user.last_name }}</h3>
 <div class="container">
@@ -28,9 +31,46 @@
 </div>
 {% if bookmarks %}
 <h1>Your Bookmarked Medications</h1>
-<ul>
+<div id="accordion">
   {% for bookmark in bookmarks %}
-  <li>{{ bookmark.medication_name }}</li>
+  <div class="card">
+    <div class="card-header" id="heading{{ loop.index }}">
+      <h5 class="mb-0">
+        <a
+          href="#"
+          class="btn btn-link"
+          data-toggle="collapse"
+          data-target="#collapse{{ loop.index }}"
+          aria-controls="collapse {{ loop.index }}"
+        >
+          {{ bookmark.brand_name }}
+        </a>
+      </h5>
+    </div>
+
+    <div class="collapse" id="collapse{{ loop.index }}">
+      <p class="card-text">
+        <strong>Generic Name:</strong> {{ bookmark.generic_name }} <br />
+        <strong>Active Ingredient(s):</strong> {{ bookmark.active_ingredient }}
+        <br />
+        <strong>Purpose:</strong> {{ bookmark.purpose }} <br />
+        <strong>Warnings:</strong> {{ bookmark.warnings }} <br />
+        <strong>Indications:</strong> {{ bookmark.indications }} <br />
+        <strong>Dosage and Administration:</strong> {{ bookmark.dosage }}<br />
+        <strong>Adverse Reactions:</strong> {{ bookmark.adverse_reactions }}<br />
+        <strong>Storage and Handling:</strong> {{ bookmark.storage }}
+        <form
+        style="display: inline"
+        action="{{url_for('remove_bookmark', id = bookmark.id) }}"
+        method="POST"
+      >
+        <button class="btn btn-danger btn-sm">
+            <i class="fa-solid fa-link-slash"></i> Remove Bookmark
+        </button>
+      </form>
+      </p>
+    </div>
+  </div>
   {% endfor %}
-</ul>
+</div>
 {% endif %} {% endblock %}

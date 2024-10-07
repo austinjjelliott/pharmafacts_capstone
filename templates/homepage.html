@@ -1,5 +1,9 @@
-{% extends 'base.html' %} {% block content %}
-<h1 class="display-1">Welcome to Pharmafacts!</h1>
+{% extends 'base.html' %} 
+{% block title %} PharmaFacts {% endblock %}
+
+{% block content %}
+
+<h1 class="display-1">Welcome to PharmaFacts!</h1>
 <div class="container">
   <div class="container">
     <p class="lead text-center">
@@ -25,12 +29,52 @@
   <div class="col-md-12 mb-4">
     <div class="card">
       <div class="card-body">
+        <!-- BOOKMARKS BUTTON -->
         <form action="/bookmark" method="POST">
-          <!-- Need to fix this bookmark button... -->
           <input
             type="hidden"
-            name="medication_name"
-            value="{{ item.brand_name }}"
+            name="brand_name"
+            value="{{ item.openfda.brand_name[0] if item.openfda.brand_name else 'N/A' }}"
+          />
+          <input
+            type="hidden"
+            name="generic_name"
+            value="{{ item.openfda.generic_name[0] if item.openfda.generic_name else 'N/A' }}"
+          />
+          <input
+            type="hidden"
+            name="active_ingredient"
+            value="{{ item.active_ingredient[0] if item.active_ingredient else 'N/A-changed here' }}"
+          />
+          <input
+            type="hidden"
+            name="purpose"
+            value="{{ item.purpose[0] if item.purpose else 'N/A' }}"
+          />
+          <input
+            type="hidden"
+            name="warnings"
+            value="{{ item.warnings[0] if item.warnings else 'N/A' }}"
+          />
+          <input
+            type="hidden"
+            name="indications_and_usage"
+            value="{{ item.indications_and_usage[0] if item.indications_and_usage else 'N/A' }}"
+          />
+          <input
+            type="hidden"
+            name="dosage_and_administration"
+            value="{{ item.dosage_and_administration[0] if item.dosage_and_administration else 'N/A' }}"
+          />
+          <input
+            type="hidden"
+            name="adverse_reactions"
+            value="{{ item.adverse_reactions[0] if item.adverse_reactions else 'N/A' }}"
+          />
+          <input
+            type="hidden"
+            name="storage_and_handling"
+            value="{{ item.storage_and_handling[0] if item.storage_and_handling else 'N/A' }}"
           />
           <button class="btn btn-primary" type="submit">
             Bookmark <i class="fa-regular fa-bookmark"></i>
